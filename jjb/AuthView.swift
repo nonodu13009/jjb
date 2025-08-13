@@ -156,12 +156,27 @@ struct CustomTextField: View {
                 .foregroundColor(Color.gracieBarraGold)
                 .frame(width: 24)
             
-            TextField(placeholder, text: $text)
-                .keyboardType(keyboardType)
-                .autocapitalization(keyboardType == .emailAddress ? .none : .words)
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundColor(.white)
-                .accentColor(Color.gracieBarraGold)
+            ZStack(alignment: .leading) {
+                if text.isEmpty {
+                    Text(placeholder)
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.6))
+                        .padding(.leading, 0)
+                }
+                
+                TextField("", text: $text)
+                    .keyboardType(keyboardType)
+                    .autocapitalization(.words)
+                    .font(.system(size: 16, weight: .medium, design: .rounded))
+                    .foregroundColor(.white)
+                    .accentColor(Color.gracieBarraGold)
+                    .onChange(of: text) { newValue in
+                        // Capitaliser chaque mot du prénom composé
+                        if icon == "person.fill" {
+                            text = capitalizeCompoundName(newValue)
+                        }
+                    }
+            }
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 18)
@@ -174,6 +189,25 @@ struct CustomTextField: View {
                 )
         )
         .accessibilityLabel(placeholder)
+    }
+    
+    // Fonction pour capitaliser les prénoms composés
+    private func capitalizeCompoundName(_ name: String) -> String {
+        return name.components(separatedBy: .whitespaces)
+            .map { word in
+                // Gérer les prénoms avec tirets (ex: Jean-Michel)
+                if word.contains("-") {
+                    return word.components(separatedBy: "-")
+                        .map { part in
+                            part.prefix(1).uppercased() + part.dropFirst().lowercased()
+                        }
+                        .joined(separator: "-")
+                } else {
+                    // Capitaliser le premier caractère, minuscules pour le reste
+                    return word.prefix(1).uppercased() + word.dropFirst().lowercased()
+                }
+            }
+            .joined(separator: " ")
     }
 }
 
@@ -190,16 +224,25 @@ struct CustomSecureField: View {
                 .foregroundColor(Color.gracieBarraGold)
                 .frame(width: 24)
             
-            if isPasswordVisible {
-                TextField(placeholder, text: $text)
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundColor(.white)
-                    .accentColor(Color.gracieBarraGold)
-            } else {
-                SecureField(placeholder, text: $text)
-                    .font(.system(size: 16, weight: .medium, design: .rounded))
-                    .foregroundColor(.white)
-                    .accentColor(Color.gracieBarraGold)
+            ZStack(alignment: .leading) {
+                if text.isEmpty {
+                    Text(placeholder)
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.6))
+                        .padding(.leading, 0)
+                }
+                
+                if isPasswordVisible {
+                    TextField("", text: $text)
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundColor(.white)
+                        .accentColor(Color.gracieBarraGold)
+                } else {
+                    SecureField("", text: $text)
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundColor(.white)
+                        .accentColor(Color.gracieBarraGold)
+                }
             }
             
             // Bouton pour révéler/masquer le mot de passe

@@ -44,13 +44,16 @@ class AuthViewModel: ObservableObject {
         do {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
             
+            // Formater correctement le nom d'affichage
+            let formattedDisplayName = displayName.cleanedAndFormattedName
+            
             // Mettre à jour le display name
             let changeRequest = result.user.createProfileChangeRequest()
-            changeRequest.displayName = displayName
+            changeRequest.displayName = formattedDisplayName
             try await changeRequest.commitChanges()
             
             // Créer le profil utilisateur dans Firestore
-            try await createUserProfile(userId: result.user.uid, email: email, displayName: displayName)
+            try await createUserProfile(userId: result.user.uid, email: email, displayName: formattedDisplayName)
             
             user = result.user
             isAuthenticated = true
