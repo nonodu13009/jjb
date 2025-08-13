@@ -8,14 +8,21 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var authViewModel = AuthViewModel()
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        Group {
+            if authViewModel.isAuthenticated {
+                UserProfileView()
+                    .environmentObject(authViewModel)
+            } else {
+                AuthView()
+                    .environmentObject(authViewModel)
+            }
         }
-        .padding()
+        .onAppear {
+            // L'état d'authentification est automatiquement géré par AuthViewModel
+        }
     }
 }
 
