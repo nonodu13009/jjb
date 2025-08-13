@@ -52,8 +52,8 @@ class AuthViewModel: ObservableObject {
             changeRequest.displayName = formattedDisplayName
             try await changeRequest.commitChanges()
             
-            // Créer le profil utilisateur dans Firestore
-            try await createUserProfile(userId: result.user.uid, email: email, displayName: formattedDisplayName)
+            // Créer le profil utilisateur dans Firestore avec le nouveau modèle
+            try await createUserProfileWithModel(userId: result.user.uid, email: email, displayName: formattedDisplayName)
             
             user = result.user
             isAuthenticated = true
@@ -64,16 +64,19 @@ class AuthViewModel: ObservableObject {
         isLoading = false
     }
     
-    private func createUserProfile(userId: String, email: String, displayName: String) async throws {
+    private func createUserProfileWithModel(userId: String, email: String, displayName: String) async throws {
         let db = Firestore.firestore()
-        let userData: [String: Any] = [
-            "email": email,
-            "displayName": displayName,
-            "createdAt": FieldValue.serverTimestamp(),
-            "updatedAt": FieldValue.serverTimestamp()
-        ]
         
-        try await db.collection("users").document(userId).setData(userData)
+        // Créer un profil utilisateur avec le nouveau modèle
+        let profile = UserProfile(
+            id: userId,
+            firstName: displayName,
+            lastName: "",
+            displayName: displayName,
+            email: email
+        )
+        
+        try await db.collection("users").document(userId).setData(profile.firestoreData)
     }
     
     func signOut() {

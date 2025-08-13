@@ -8,7 +8,7 @@ struct MainTabView: View {
             // Accueil
             HomeView()
                 .tabItem {
-                    Image(systemName: selectedTab == 0 ? "house.fill" : "house")
+                    Image(systemName: "house")
                     Text("Accueil")
                 }
                 .tag(0)
@@ -16,7 +16,7 @@ struct MainTabView: View {
             // Entraînement
             TrainingView()
                 .tabItem {
-                    Image(systemName: selectedTab == 1 ? "figure.martial.arts" : "figure.martial.arts")
+                    Image(systemName: "figure.martial.arts")
                     Text("Entraînement")
                 }
                 .tag(1)
@@ -24,7 +24,7 @@ struct MainTabView: View {
             // Progression
             ProgressionView()
                 .tabItem {
-                    Image(systemName: selectedTab == 2 ? "chart.line.uptrend.xyaxis.fill" : "chart.line.uptrend.xyaxis")
+                    Image(systemName: "chart.line.uptrend.xyaxis")
                     Text("Progression")
                 }
                 .tag(2)
@@ -32,7 +32,7 @@ struct MainTabView: View {
             // Règles
             RulesView()
                 .tabItem {
-                    Image(systemName: selectedTab == 3 ? "book.closed.fill" : "book.closed")
+                    Image(systemName: "book.closed")
                     Text("Règles")
                 }
                 .tag(3)
@@ -40,7 +40,7 @@ struct MainTabView: View {
             // Profil
             UserProfileView()
                 .tabItem {
-                    Image(systemName: selectedTab == 4 ? "person.fill" : "person")
+                    Image(systemName: "person")
                     Text("Profil")
                 }
                 .tag(4)
