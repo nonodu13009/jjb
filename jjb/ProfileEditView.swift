@@ -168,15 +168,13 @@ struct ProfileEditView: View {
                             }
                             
                             // Poids
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: 12) {
                                 Text("POIDS (KG)")
                                     .font(.system(size: 16, weight: .semibold, design: .rounded))
                                     .foregroundColor(.white)
                                     .tracking(1)
                                 
-                                TextField("Poids en kg", text: $weight)
-                                    .textFieldStyle(GracieBarraTextFieldStyle())
-                                    .keyboardType(.decimalPad)
+                                WeightSelector(weight: $weight)
                             }
                             
                             // Grade JJB
@@ -307,7 +305,14 @@ struct ProfileEditView: View {
         }
         
         if let weight = profile.weight {
-            self.weight = String(Int(weight))
+            // Formater le poids avec ou sans décimales
+            if weight.truncatingRemainder(dividingBy: 1) == 0 {
+                self.weight = String(Int(weight))
+            } else {
+                self.weight = String(format: "%.1f", weight)
+            }
+        } else {
+            self.weight = ""
         }
         
         selectedGrade = profile.jjbGrade
@@ -319,7 +324,7 @@ struct ProfileEditView: View {
         guard profileViewModel.validateProfile(
             firstName: firstName,
             lastName: lastName,
-            weight: Double(weight)
+            weight: weight.isEmpty ? nil : Double(weight)
         ) else { return }
         
         // Création de la date de naissance
@@ -332,13 +337,16 @@ struct ProfileEditView: View {
             birthDate = Calendar.current.date(from: components)
         }
         
+        // Conversion du poids
+        let weightValue = weight.isEmpty ? nil : Double(weight)
+        
         // Mise à jour du profil
         profileViewModel.updateProfile(
             firstName: firstName.trimmingCharacters(in: .whitespacesAndNewlines),
             lastName: lastName.trimmingCharacters(in: .whitespacesAndNewlines),
             gender: selectedGender,
             birthDate: birthDate,
-            weight: Double(weight),
+            weight: weightValue,
             jjbGrade: selectedGrade
         )
         
@@ -471,6 +479,115 @@ struct GracieBarraTextFieldStyle: TextFieldStyle {
                             .stroke(Color.gracieBarraGold.opacity(0.3), lineWidth: 1)
                     )
             )
+    }
+}
+
+struct WeightSelector: View {
+    @Binding var weight: String
+    
+    var body: some View {
+        VStack(spacing: 15) {
+            // Affichage du poids actuel
+            HStack {
+                Spacer()
+                VStack(spacing: 8) {
+                    Text(weight.isEmpty ? "0" : weight)
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                    
+                    Text("kg")
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundColor(Color.gracieBarraGold)
+                }
+                Spacer()
+            }
+            .padding(.vertical, 20)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.white.opacity(0.1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.gracieBarraGold.opacity(0.3), lineWidth: 1)
+                    )
+            )
+            
+            // Boutons de réglage
+            VStack(spacing: 12) {
+                // Boutons +10, +1, +0.1
+                HStack(spacing: 12) {
+                    WeightButton(title: "+10", action: { adjustWeight(10) })
+                    WeightButton(title: "+1", action: { adjustWeight(1) })
+                    WeightButton(title: "+0.1", action: { adjustWeight(0.1) })
+                }
+                
+                // Boutons -10, -1, -0.1
+                HStack(spacing: 12) {
+                    WeightButton(title: "-10", action: { adjustWeight(-10) })
+                    WeightButton(title: "-1", action: { adjustWeight(-1) })
+                    WeightButton(title: "-0.1", action: { adjustWeight(-0.1) })
+                }
+            }
+            
+            // Bouton de réinitialisation
+            Button(action: resetWeight) {
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.caption)
+                    Text("Réinitialiser")
+                        .font(.system(size: 14, weight: .medium, design: .rounded))
+                }
+                .foregroundColor(Color.gracieBarraGold)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.gracieBarraGold.opacity(0.4), lineWidth: 1)
+                )
+            }
+        }
+    }
+    
+    private func adjustWeight(_ adjustment: Double) {
+        let currentWeight = Double(weight) ?? 0.0
+        let newWeight = currentWeight + adjustment
+        
+        // Limiter le poids entre 0 et 500 kg
+        let clampedWeight = max(0, min(500, newWeight))
+        
+        // Formater le poids (afficher les décimales seulement si nécessaire)
+        if clampedWeight.truncatingRemainder(dividingBy: 1) == 0 {
+            weight = String(Int(clampedWeight))
+        } else {
+            weight = String(format: "%.1f", clampedWeight)
+        }
+    }
+    
+    private func resetWeight() {
+        weight = ""
+    }
+}
+
+struct WeightButton: View {
+    let title: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 16, weight: .semibold, design: .rounded))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 45)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.gracieBarraGold.opacity(0.2))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.gracieBarraGold, lineWidth: 1.5)
+                        )
+                )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

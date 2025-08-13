@@ -148,9 +148,11 @@ class UserProfileViewModel: ObservableObject {
             return false
         }
         
-        if let weight = weight, weight <= 0 {
-            errorMessage = "Le poids doit être supérieur à 0"
-            return false
+        if let weight = weight {
+            guard weight > 0 && weight <= 500 else {
+                errorMessage = "Le poids doit être entre 0.1 et 500 kg"
+                return false
+            }
         }
         
         return true
